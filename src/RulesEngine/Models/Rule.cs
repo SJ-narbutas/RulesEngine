@@ -32,7 +32,7 @@ namespace RulesEngine.Models
         /// </summary>
         public bool Enabled { get; set; } = true;
 
-        [JsonConverter(typeof(JsonStringEnumConverter))]
+        [JsonConverter(typeof(JsonStringEnumConverter<RuleExpressionType>))]
         public RuleExpressionType RuleExpressionType { get; set; } = RuleExpressionType.LambdaExpression;
         public IEnumerable<string> WorkflowsToInject { get; set; }
         public IEnumerable<Rule> Rules { get; set; }
