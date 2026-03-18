@@ -24,7 +24,7 @@
           "Expression": "int.Parse(\u002215\u0022)"
         }
       ],
-      "Expression": "input1.Count \u003E= ruleCount \u0026\u0026 input1.Where(x =\u003E x.Value \u003E= threshold).Count() \u003E= ruleCount",
+      "Expression": "input1.Count >= ruleCount && input1.Where(x => x.Value >= threshold).Count() >= ruleCount",
       "Actions": null,
       "SuccessEvent": null
     },

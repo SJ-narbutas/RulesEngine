@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using RulesEngine.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -11,12 +12,45 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace RulesEngine.UnitTest
 {
     [ExcludeFromCodeCoverage]
     public class NestedRulesTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public NestedRulesTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+        private static void DebugOutput(ITestOutputHelper output, string workFlowName, List<RuleResultTree> result)
+        {
+            int r = 1;
+            output.WriteLine($"WF: {workFlowName}");
+            foreach (var ruleResult in result)
+            {
+                if (ruleResult.ActionResult != null)
+                {
+                    output.WriteLine($"{r}: {ruleResult.IsSuccess} {ruleResult.Rule.RuleName} - [{ruleResult.ActionResult.Output}]");
+                }
+
+                int c = 1;
+                if (ruleResult.ChildResults != null)
+                {
+                    foreach (var childrenResult in ruleResult.ChildResults)
+                    {
+                        if (childrenResult.ActionResult != null)
+                        {
+                            output.WriteLine($"\t{r}.{c++}: {childrenResult.IsSuccess} {childrenResult.Rule.RuleName} - [{childrenResult.ActionResult.Output}]");
+                        }
+                    }
+                }
+                r++;
+            }
+        }
+
         [Theory]
         [InlineData(NestedRuleExecutionMode.All)]
         [InlineData(NestedRuleExecutionMode.Performance)]
@@ -29,6 +63,8 @@ namespace RulesEngine.UnitTest
             input1.trueValue = true;
 
             List<RuleResultTree> result = await rulesEngine.ExecuteAllRulesAsync("NestedRulesTest", input1);
+            DebugOutput(_output, "NestedRulesTest", result);
+
             var andResults = result.Where(c => c.Rule.Operator == "And").ToList();
             var orResults = result.Where(c => c.Rule.Operator == "Or").ToList();
             Assert.All(andResults, c => Assert.False(c.IsSuccess));
@@ -67,6 +103,7 @@ namespace RulesEngine.UnitTest
             input1.trueValue = true;
 
             List<RuleResultTree> result = await rulesEngine.ExecuteAllRulesAsync("NestedRulesActionsTest", input1);
+            DebugOutput(_output, "NestedRulesActionsTest", result);
 
             Assert.False(result[0].IsSuccess);
             Assert.Equal(input1.trueValue, result[0].ActionResult.Output);
@@ -89,6 +126,7 @@ namespace RulesEngine.UnitTest
             input1.trueValue = true;
 
             List<RuleResultTree> result = await rulesEngine.ExecuteAllRulesAsync("NestedRulesActionsTest", input1);
+            DebugOutput(_output, "NestedRulesActionsTest", result);
 
             Assert.False(result[0].IsSuccess);
             Assert.Equal(input1.trueValue, result[0].ActionResult.Output);
@@ -227,13 +265,13 @@ namespace RulesEngine.UnitTest
             var result = await rulesEngine.ExecuteAllRulesAsync("NestedRulesTest", new[] { input1 });
             var andResults = result.Where(c => c.Rule.Operator == "And").ToList();
             var orResults = result.Where(c => c.Rule.Operator == "Or").ToList();
-            Assert.All(andResults,c => Assert.False(c.IsSuccess));
-            Assert.All(orResults,c => Assert.True(c.IsSuccess));
+            Assert.All(andResults, c => Assert.False(c.IsSuccess));
+            Assert.All(orResults, c => Assert.True(c.IsSuccess));
 
             if (mode == NestedRuleExecutionMode.All)
             {
-                Assert.All(andResults,c => Assert.Equal(c.Rule.Rules.Count(), c.ChildResults.Count()));
-                Assert.All(orResults,c => Assert.Equal(c.Rule.Rules.Count(), c.ChildResults.Count()));
+                Assert.All(andResults, c => Assert.Equal(c.Rule.Rules.Count(), c.ChildResults.Count()));
+                Assert.All(orResults, c => Assert.Equal(c.Rule.Rules.Count(), c.ChildResults.Count()));
             }
             else if (mode == NestedRuleExecutionMode.Performance)
             {

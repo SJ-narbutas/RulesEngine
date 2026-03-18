@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using RulesEngine.ExpressionBuilders;
@@ -8,7 +8,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Xunit;
 
 namespace RulesEngine.UnitTest.RuleExpressionParserTests
@@ -16,11 +15,7 @@ namespace RulesEngine.UnitTest.RuleExpressionParserTests
     [ExcludeFromCodeCoverage]
     public class RuleExpressionParserTests
     {
-        public RuleExpressionParserTests() {
-
-
-        }
-
+        public RuleExpressionParserTests() { }
 
         [Fact]
         public void TestExpressionWithJObject()
@@ -38,9 +33,9 @@ namespace RulesEngine.UnitTest.RuleExpressionParserTests
 
             var value1 = ruleParser.Evaluate<object>("input.list[0].item3 == 1", new[] { new RuleParameter("input", input) });
             var value2 = ruleParser.Evaluate<object>("input.list[1].item1 == \"world\"", new[] { new RuleParameter("input", input) });
-            var value3= ruleParser.Evaluate<object>("string.Concat(input.list[0].item1, input.list[1].item1)", new[] { new RuleParameter("input", input) });
+            var value3 = ruleParser.Evaluate<object>("string.Concat(input.list[0].item1, input.list[1].item1)", new[] { new RuleParameter("input", input) });
 
-             Assert.Equal(true, value1);
+            Assert.Equal(true, value1);
             Assert.Equal(true, value2);
             Assert.Equal("helloworld", value3);
         }
@@ -51,7 +46,7 @@ namespace RulesEngine.UnitTest.RuleExpressionParserTests
             var board = new { NumberOfMembers = default(double?) };
 
             var parameters = new RuleParameter[] {
-                RuleParameter.Create("Board", board) 
+                RuleParameter.Create("Board", board)
             };
 
             var parser = new RuleExpressionParser();
@@ -74,7 +69,8 @@ namespace RulesEngine.UnitTest.RuleExpressionParserTests
 
         [Theory]
         [InlineData(false)]
-        public void TestExpressionWithDifferentCompilerSettings(bool fastExpressionEnabled){
+        public void TestExpressionWithDifferentCompilerSettings(bool fastExpressionEnabled)
+        {
             var ruleParser = new RuleExpressionParser(new Models.ReSettings() { UseFastExpressionCompiler = fastExpressionEnabled });
 
             decimal? d1 = null;
@@ -82,6 +78,4 @@ namespace RulesEngine.UnitTest.RuleExpressionParserTests
             Assert.False(result);
         }
     }
-    
-
 }
