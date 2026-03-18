@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 //  Licensed under the MIT License.
 
 using RulesEngine.Models;
@@ -21,8 +21,8 @@ namespace RulesEngine.Actions
             {
                 if (!reSettings.IgnoreException && reSettings.EnableExceptionAsErrorMessage)
                     result.Exception = new Exception($"Exception while executing {GetType().Name}: {ex.Message}", ex);
-                else if(!reSettings.IgnoreException && !reSettings.EnableExceptionAsErrorMessage)
-                    throw ex;
+                else if (!reSettings.IgnoreException && !reSettings.EnableExceptionAsErrorMessage)
+                    throw;
             }
             finally
             {

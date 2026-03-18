@@ -1,9 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using RulesEngine.Exceptions;
 using RulesEngine.ExpressionBuilders;
+#if NETSTANDARD2_0_OR_GREATER
 using RulesEngine.Extensions;
+#endif
 using RulesEngine.HelperFunctions;
 using RulesEngine.Models;
 using System;
@@ -52,18 +54,17 @@ namespace RulesEngine
         {
             if (rule == null)
             {
-                var ex =  new ArgumentNullException(nameof(rule));
+                var ex = new ArgumentNullException(nameof(rule));
                 throw ex;
             }
             try
             {
                 var globalParamExp = globalParams.Value;
-                var extendedRuleParams = ruleParams.Concat(globalParamExp.Select(c => new RuleParameter(c.ParameterExpression.Name,c.ParameterExpression.Type)))
+                var extendedRuleParams = ruleParams.Concat(globalParamExp.Select(c => new RuleParameter(c.ParameterExpression.Name, c.ParameterExpression.Type)))
                                                    .DistinctBy(x => x.Name).ToArray();
                 var ruleExpression = GetDelegateForRule(rule, extendedRuleParams);
-                
 
-                return GetWrappedRuleFunc(rule,ruleExpression,ruleParams,globalParamExp);
+                return GetWrappedRuleFunc(rule, ruleExpression, ruleParams, globalParamExp);
             }
             catch (Exception ex)
             {
@@ -71,8 +72,6 @@ namespace RulesEngine
                 return Helpers.ToRuleExceptionResult(_reSettings, rule, new RuleException(message, ex));
             }
         }
-
-
 
         /// <summary>
         /// Gets the expression for rule.
@@ -89,7 +88,7 @@ namespace RulesEngine
                                                .ToArray();
 
             RuleFunc<RuleResultTree> ruleFn;
-            
+
             if (Enum.TryParse(rule.Operator, out ExpressionType nestedOperator) && nestedOperators.Contains(nestedOperator) &&
                 rule.Rules != null && rule.Rules.Any())
             {
@@ -103,9 +102,9 @@ namespace RulesEngine
             return GetWrappedRuleFunc(rule, ruleFn, ruleParams, scopedParamList);
         }
 
-        internal RuleExpressionParameter[] GetRuleExpressionParameters(RuleExpressionType ruleExpressionType,IEnumerable<ScopedParam> localParams, RuleParameter[] ruleParams)
+        internal RuleExpressionParameter[] GetRuleExpressionParameters(RuleExpressionType ruleExpressionType, IEnumerable<ScopedParam> localParams, RuleParameter[] ruleParams)
         {
-            if(!_reSettings.EnableScopedParams)
+            if (!_reSettings.EnableScopedParams)
             {
                 return new RuleExpressionParameter[] { };
             }
@@ -136,7 +135,7 @@ namespace RulesEngine
 
                         parametersArray = parameters.ToArray();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         var message = $"{ex.Message}, in ScopedParam: {lp.Name}";
                         throw new RuleException(message);
@@ -144,7 +143,6 @@ namespace RulesEngine
                 }
             }
             return ruleExpParams.ToArray();
-
         }
 
         /// <summary>
@@ -190,23 +188,22 @@ namespace RulesEngine
             };
         }
 
-
-        private (bool isSuccess ,IEnumerable<RuleResultTree> result) ApplyOperation(RuleParameter[] paramArray,IEnumerable<RuleFunc<RuleResultTree>> ruleFuncList, ExpressionType operation)
+        private (bool isSuccess, IEnumerable<RuleResultTree> result) ApplyOperation(RuleParameter[] paramArray, IEnumerable<RuleFunc<RuleResultTree>> ruleFuncList, ExpressionType operation)
         {
             if (ruleFuncList?.Any() != true)
             {
-                return (false,new List<RuleResultTree>());
+                return (false, new List<RuleResultTree>());
             }
 
             var resultList = new List<RuleResultTree>();
             var isSuccess = false;
 
-            if(operation == ExpressionType.And || operation == ExpressionType.AndAlso)
+            if (operation == ExpressionType.And || operation == ExpressionType.AndAlso)
             {
                 isSuccess = true;
             }
 
-            foreach(var ruleFunc in ruleFuncList)
+            foreach (var ruleFunc in ruleFuncList)
             {
                 var ruleResult = ruleFunc(paramArray);
                 resultList.Add(ruleResult);
@@ -215,7 +212,7 @@ namespace RulesEngine
                     case ExpressionType.And:
                     case ExpressionType.AndAlso:
                         isSuccess = isSuccess && ruleResult.IsSuccess;
-                        if(_reSettings.NestedRuleExecutionMode ==  NestedRuleExecutionMode.Performance && isSuccess == false)
+                        if (_reSettings.NestedRuleExecutionMode == NestedRuleExecutionMode.Performance && isSuccess == false)
                         {
                             return (isSuccess, resultList);
                         }
@@ -230,24 +227,22 @@ namespace RulesEngine
                         }
                         break;
                 }
-                
             }
             return (isSuccess, resultList);
         }
 
-        internal Func<object[],Dictionary<string,object>> CompileScopedParams(RuleExpressionType ruleExpressionType, RuleParameter[] ruleParameters,RuleExpressionParameter[] ruleExpParams)
+        internal Func<object[], Dictionary<string, object>> CompileScopedParams(RuleExpressionType ruleExpressionType, RuleParameter[] ruleParameters, RuleExpressionParameter[] ruleExpParams)
         {
             return GetExpressionBuilder(ruleExpressionType).CompileScopedParams(ruleParameters, ruleExpParams);
-
         }
 
-        private RuleFunc<RuleResultTree> GetWrappedRuleFunc(Rule rule, RuleFunc<RuleResultTree> ruleFunc,RuleParameter[] ruleParameters,RuleExpressionParameter[] ruleExpParams)
+        private RuleFunc<RuleResultTree> GetWrappedRuleFunc(Rule rule, RuleFunc<RuleResultTree> ruleFunc, RuleParameter[] ruleParameters, RuleExpressionParameter[] ruleExpParams)
         {
-            if(ruleExpParams.Length == 0)
+            if (ruleExpParams.Length == 0)
             {
                 return ruleFunc;
             }
-            var paramDelegate = CompileScopedParams(rule.RuleExpressionType,ruleParameters, ruleExpParams);
+            var paramDelegate = CompileScopedParams(rule.RuleExpressionType, ruleParameters, ruleExpParams);
 
             return (ruleParams) => {
                 var inputs = ruleParams.Select(c => c.Value).ToArray();
@@ -257,13 +252,13 @@ namespace RulesEngine
                     var scopedParamsDict = paramDelegate(inputs);
                     scopedParams = scopedParamsDict.Select(c => new RuleParameter(c.Key, c.Value));
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     var message = $"Error while executing scoped params for rule `{rule.RuleName}` - {ex}";
                     var resultFn = Helpers.ToRuleExceptionResult(_reSettings, rule, new RuleException(message, ex));
                     return resultFn(ruleParams);
                 }
-               
+
                 var extendedInputs = ruleParams.Concat(scopedParams).DistinctBy(x => x.Name);
                 var result = ruleFunc(extendedInputs.ToArray());
                 return result;

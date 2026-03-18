@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System;
@@ -14,10 +14,9 @@ namespace RulesEngine.Extensions
             return enumerable ?? Enumerable.Empty<T>();
         }
 
-        public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source,Func<TSource, TKey> keySelector)
+#if NETSTANDARD2_0_OR_GREATER
+        public static IEnumerable<TSource> DistinctBy<TSource, TKey>(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
         {
-            
-
             var seenKeys = new HashSet<TKey>();
 
             foreach (var element in source)
@@ -28,5 +27,6 @@ namespace RulesEngine.Extensions
                 }
             }
         }
+#endif
     }
 }
