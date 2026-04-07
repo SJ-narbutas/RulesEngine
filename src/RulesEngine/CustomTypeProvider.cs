@@ -14,10 +14,11 @@ namespace RulesEngine
         private HashSet<Type> _types;
         public CustomTypeProvider(Type[] types) : base(ParsingConfig.Default)
         {
-            _types = new HashSet<Type>(types ?? new Type[] { }) {
-                typeof(Object),
+            _types = [
+                .. types ?? [],
+                typeof(object),
                 typeof(ExpressionUtils)
-            };
+            ];
         }
 
         public override HashSet<Type> GetCustomTypes()

@@ -351,7 +351,7 @@ namespace RulesEngine.UnitTest
             for (var i = 0; i < inputs.Length; i++)
             {
                 var input = inputs[i];
-                var obj = Utils.GetTypedObject(input);
+                var obj = HelperFunctions.Utils.GetTypedObject(input);
                 ruleParams.Add(new RuleParameter($"input{i + 1}", obj));
             }
 

@@ -1,20 +1,16 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using RulesEngine.Models;
+using RulesEngine.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Reflection;
 using System.Text.Json;
 using Xunit;
-
-using RulesEngine.HelperFunctions;
-using RulesEngine.Serialization;
-using RulesEngine.Models;
-using System.Text.Json.Nodes;
 
 namespace RulesEngine.UnitTest
 {
@@ -35,7 +31,7 @@ namespace RulesEngine.UnitTest
             dynamic obj = new ExpandoObject();
             obj.Test = "hello";
             obj.TestList = new List<int> { 1, 2, 3 };
-            object typedobj = Utils.GetTypedObject(obj);
+            object typedobj = HelperFunctions.Utils.GetTypedObject(obj);
             Assert.IsNotType<ExpandoObject>(typedobj);
             Assert.NotNull(typedobj.GetType().GetProperty("Test"));
         }
@@ -48,7 +44,7 @@ namespace RulesEngine.UnitTest
             ((IDictionary<string, object>)obj)["L"] = 1000;
             ((IDictionary<string, object>)obj)["W"] = 500;
 
-            object typedobj = Utils.GetTypedObject(obj);
+            object typedobj = HelperFunctions.Utils.GetTypedObject(obj);
             Assert.IsNotType<ExpandoObject>(typedobj);
             Assert.NotNull(typedobj.GetType().GetProperty("L"));
             Assert.NotNull(typedobj.GetType().GetProperty("W"));
@@ -64,8 +60,8 @@ namespace RulesEngine.UnitTest
             dynamic obj2 = new ExpandoObject();
             obj2.Test = "world";
             obj2.TestList = new List<int> { 1, 2, 3 };
-            object typedobj = Utils.GetTypedObject(obj);
-            object typedobj2 = Utils.GetTypedObject(obj2);
+            object typedobj = HelperFunctions.Utils.GetTypedObject(obj);
+            object typedobj2 = HelperFunctions.Utils.GetTypedObject(obj2);
             Assert.IsNotType<ExpandoObject>(typedobj);
             Assert.NotNull(typedobj.GetType().GetProperty("Test"));
             Assert.Equal(typedobj.GetType(), typedobj2.GetType());
@@ -78,7 +74,7 @@ namespace RulesEngine.UnitTest
             var obj = new {
                 Test = "hello"
             };
-            var typedobj = Utils.GetTypedObject(obj);
+            var typedobj = HelperFunctions.Utils.GetTypedObject(obj);
             Assert.IsNotType<ExpandoObject>(typedobj);
             Assert.NotNull(typedobj.GetType().GetProperty("Test"));
         }
@@ -90,7 +86,7 @@ namespace RulesEngine.UnitTest
             dynamic obj = JsonSerializer.SerializeToElement(new {
                 Test = "hello"
             });
-            dynamic typedobj = Utils.GetTypedObject(obj);
+            dynamic typedobj = HelperFunctions.Utils.GetTypedObject(obj);
             Assert.IsNotType<ExpandoObject>(typedobj);
             Assert.IsType<JsonElement>(typedobj);
             //Assert.NotNull(((JsonElement)typedobj).GetProperty("Test")); //generates a warning
@@ -103,7 +99,7 @@ namespace RulesEngine.UnitTest
             obj.Test = "test";
             obj.TestList = new List<int> { 1, 2, 3 };
 
-            object newObj = Utils.CreateObject(typeof(TestClass), obj);
+            object newObj = HelperFunctions.Utils.CreateObject(typeof(TestClass), obj);
             Assert.IsNotType<ExpandoObject>(newObj);
             Assert.NotNull(newObj.GetType().GetProperty("Test"));
         }
@@ -116,7 +112,7 @@ namespace RulesEngine.UnitTest
             obj.TestList = new List<int> { 1, 2, 3 };
             obj.testEmptyList = new List<object>();
 
-            Type type = Utils.CreateAbstractClassType(obj);
+            Type type = HelperFunctions.Utils.CreateAbstractClassType(obj);
             Assert.NotEqual(typeof(ExpandoObject), type);
             Assert.NotNull(type.GetProperty("Test"));
         }
@@ -127,7 +123,7 @@ namespace RulesEngine.UnitTest
             const string jsonString = @"{""name"":""John"", ""age"":30, ""isStudent"":false}";
             var document = JsonSerializer.Deserialize<ExpandoObject>(jsonString);
 
-            var type = Utils.CreateAbstractClassType(document);
+            var type = HelperFunctions.Utils.CreateAbstractClassType(document);
             var propertyNames = type.GetProperties().Select(p => p.Name).ToArray();
 
             Assert.Contains("name", propertyNames);
@@ -141,8 +137,8 @@ namespace RulesEngine.UnitTest
             var jsonString = @"{""name"":""John"", ""age"":30, ""isStudent"":false}";
             var document = JsonSerializer.Deserialize<ExpandoObject>(jsonString);
 
-            var type = Utils.CreateAbstractClassType(document);
-            dynamic result = Utils.CreateObject(type, document);
+            var type = HelperFunctions.Utils.CreateAbstractClassType(document);
+            dynamic result = HelperFunctions.Utils.CreateObject(type, document);
 
             Assert.Equal("John", result.name);
             Assert.Equal(30, result.age);
@@ -155,8 +151,8 @@ namespace RulesEngine.UnitTest
             var jsonString = @"{""name"":""John"", ""details"":{""age"":30, ""isStudent"":false}}";
             var document = JsonSerializer.Deserialize<ExpandoObject>(jsonString);
 
-            var type = Utils.CreateAbstractClassType(document);
-            dynamic result = Utils.CreateObject(type, document);
+            var type = HelperFunctions.Utils.CreateAbstractClassType(document);
+            dynamic result = HelperFunctions.Utils.CreateObject(type, document);
 
             Assert.Equal("John", result.name);
             Assert.Equal(30, result.details.age);
@@ -170,8 +166,8 @@ namespace RulesEngine.UnitTest
             var document = JsonSerializer.Deserialize<ExpandoObject>(jsonString);
 
 
-            var type = Utils.CreateAbstractClassType(document);
-            dynamic result = Utils.CreateObject(type, document);
+            var type = HelperFunctions.Utils.CreateAbstractClassType(document);
+            dynamic result = HelperFunctions.Utils.CreateObject(type, document);
 
             Assert.Equal("John", result.name);
 
@@ -193,8 +189,8 @@ namespace RulesEngine.UnitTest
 
             var document = JsonSerializer.Deserialize<ExpandoObject>(jsonString, options);
 
-            var type = Utils.CreateAbstractClassType(document);
-            dynamic result = Utils.CreateObject(type, document);
+            var type = HelperFunctions.Utils.CreateAbstractClassType(document);
+            dynamic result = HelperFunctions.Utils.CreateObject(type, document);
 
             Assert.IsType<List<Dictionary<string, ImplicitObject>>>(result.things);
             Assert.Empty((List<Dictionary<string, ImplicitObject>>)result.things);
