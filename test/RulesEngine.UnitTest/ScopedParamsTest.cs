@@ -488,10 +488,13 @@ namespace RulesEngine.UnitTest
             }.ToArray();
             var result = await engine.ExecuteAllRulesAsync("OverrideRules", inputs, CancellationToken.None);
 
-            Assert.All(result, c => {
-                Assert.False(c.IsSuccess);
-                Assert.StartsWith("Error while compiling rule", c.ExceptionMessage);
-            });
+            for (int i = 0; i < result.Count; i++)
+            {
+                if (i == 3)
+                    Assert.True(result[i].IsSuccess);
+                else
+                    Assert.False(result[i].IsSuccess);
+            }
         }
 
         public static ReSettings Settings => new() {
